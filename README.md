@@ -1,241 +1,115 @@
-# tree-
-nodes:
+# Daily Reflection Tree — Deterministic Agent
 
-  - id: START
-    type: start
-    text: "Good evening. Let's review your day."
+## Overview
 
-  # ---------------- AXIS 1: LOCUS ----------------
+This project implements a deterministic end-of-day reflection system as part of the DT Fellowship assignment.
 
-  - id: A1_OPEN
-    parentId: START
-    type: question
-    text: "How would you describe your day overall?"
-    options:
-      - "Productive"
-      - "Mixed"
-      - "Frustrating"
-      - "Draining"
+The system guides an employee through a structured reflection across three psychological axes:
 
-  - id: A1_DECIDE
-    parentId: A1_OPEN
-    type: decision
-    rules:
-      - condition: "answer in ['Productive','Mixed']"
-        target: A1_Q1_HIGH
-      - condition: "answer in ['Frustrating','Draining']"
-        target: A1_Q1_LOW
+1. **Locus (Victim vs Victor)** — identifying agency in outcomes
+2. **Orientation (Contribution vs Entitlement)** — focusing on what was given vs expected
+3. **Radius (Self vs Others)** — expanding perspective beyond self
 
-  - id: A1_Q1_HIGH
-    parentId: A1_DECIDE
-    type: question
-    text: "What contributed most to things going well?"
-    options:
-      - "I prepared and planned ahead"
-      - "The team supported me"
-      - "Things just worked out"
-      - "I adapted quickly"
-    signal:
-      - "axis1:internal"
-      - "axis1:external"
-      - "axis1:external"
-      - "axis1:internal"
+The reflection is implemented as a **decision tree**, not an AI system.
 
-  - id: A1_Q1_LOW
-    parentId: A1_DECIDE
-    type: question
-    text: "When things went wrong, what was your first reaction?"
-    options:
-      - "Look for what I could control"
-      - "Wait for help"
-      - "Blame external factors"
-      - "Push through without clarity"
-    signal:
-      - "axis1:internal"
-      - "axis1:external"
-      - "axis1:external"
-      - "axis1:internal"
+---
 
-  - id: A1_Q2
-    parentId: A1_Q1_HIGH
-    type: question
-    text: "When facing difficulty, what did you do?"
-    options:
-      - "Adjusted my approach"
-      - "Stayed stuck"
-      - "Relied on others"
-      - "Tried something new"
-    signal:
-      - "axis1:internal"
-      - "axis1:external"
-      - "axis1:external"
-      - "axis1:internal"
+## Key Principles
 
-  - id: A1_Q2B
-    parentId: A1_Q1_LOW
-    type: question
-    text: "What best describes your response to challenges?"
-    options:
-      - "Took ownership"
-      - "Felt helpless"
-      - "Waited for direction"
-      - "Experimented with solutions"
-    signal:
-      - "axis1:internal"
-      - "axis1:external"
-      - "axis1:external"
-      - "axis1:internal"
+* **Deterministic**
+  Same inputs always produce the same outputs. No randomness.
 
-  - id: A1_REF_INT
-    parentId: A1_Q2
-    type: reflection
-    text: "You demonstrated agency today. You didn't wait — you acted."
-    signal: "axis1:internal"
+* **No LLM at Runtime**
+  The system does not call any AI model during execution.
 
-  - id: A1_REF_EXT
-    parentId: A1_Q2B
-    type: reflection
-    text: "You leaned on external factors today. The question is — where did you still have a choice?"
-    signal: "axis1:external"
+* **Fixed Options Only**
+  All user inputs are predefined choices. No free-text input.
 
-  - id: BRIDGE_1_2
-    parentId: A1_REF_INT
-    type: bridge
-    text: "Now shift focus — from control to contribution."
-    target: A2_OPEN
+* **Structured Reasoning**
+  Each response updates internal state using signals (e.g., axis1:internal).
 
-  - id: BRIDGE_1_2B
-    parentId: A1_REF_EXT
-    type: bridge
-    text: "Now shift focus — from control to contribution."
-    target: A2_OPEN
+---
 
-  # ---------------- AXIS 2: CONTRIBUTION ----------------
+## Project Structure
 
-  - id: A2_OPEN
-    type: question
-    text: "Think about your interactions today. What stands out?"
-    options:
-      - "I helped someone"
-      - "I did my tasks"
-      - "I felt overlooked"
-      - "I expected more support"
+```
+dt-reflection/
+ ├── tree/
+ │    └── reflection-tree.yaml     # Core decision tree
+ ├── write-up.md                  # Design explanation
+ └── README.md                    # Project overview
+```
 
-  - id: A2_Q1
-    parentId: A2_OPEN
-    type: question
-    text: "Which statement best reflects your mindset?"
-    options:
-      - "I contributed beyond my role"
-      - "I did what was required"
-      - "I deserved more recognition"
-      - "Others should have done more"
-    signal:
-      - "axis2:contribution"
-      - "axis2:neutral"
-      - "axis2:entitlement"
-      - "axis2:entitlement"
+---
 
-  - id: A2_Q2
-    parentId: A2_Q1
-    type: question
-    text: "How did you respond to others’ needs?"
-    options:
-      - "Proactively helped"
-      - "Helped when asked"
-      - "Ignored"
-      - "Felt burdened"
-    signal:
-      - "axis2:contribution"
-      - "axis2:neutral"
-      - "axis2:entitlement"
-      - "axis2:entitlement"
+## Tree Design
 
-  - id: A2_REF_CONTRIB
-    parentId: A2_Q2
-    type: reflection
-    text: "You showed contribution today. You added value beyond obligation."
-    signal: "axis2:contribution"
+The reflection flow is divided into three sequential axes:
 
-  - id: A2_REF_ENTITLE
-    parentId: A2_Q2
-    type: reflection
-    text: "There was expectation today. The shift is simple — focus on what you give."
-    signal: "axis2:entitlement"
+### Axis 1: Locus (Control)
 
-  - id: BRIDGE_2_3
-    parentId: A2_REF_CONTRIB
-    type: bridge
-    text: "Now expand your perspective."
-    target: A3_OPEN
+Evaluates whether the user attributes outcomes to internal actions or external factors.
 
-  - id: BRIDGE_2_3B
-    parentId: A2_REF_ENTITLE
-    type: bridge
-    text: "Now expand your perspective."
-    target: A3_OPEN
+### Axis 2: Contribution
 
-  # ---------------- AXIS 3: RADIUS ----------------
+Measures whether the user focused on contributing value or expecting returns.
 
-  - id: A3_OPEN
-    type: question
-    text: "When reflecting on today, who do you think about most?"
-    options:
-      - "Myself"
-      - "My team"
-      - "A colleague"
-      - "The customer"
+### Axis 3: Radius
 
-  - id: A3_Q1
-    parentId: A3_OPEN
-    type: question
-    text: "What mattered most in your decisions today?"
-    options:
-      - "My workload"
-      - "Team success"
-      - "Helping someone"
-      - "Impact on users"
-    signal:
-      - "axis3:self"
-      - "axis3:team"
-      - "axis3:others"
-      - "axis3:others"
+Determines whether the user’s perspective remained self-centered or extended to others.
 
-  - id: A3_Q2
-    parentId: A3_Q1
-    type: question
-    text: "How did you handle challenges?"
-    options:
-      - "Focused on my stress"
-      - "Considered team impact"
-      - "Helped others despite pressure"
-      - "Balanced all perspectives"
-    signal:
-      - "axis3:self"
-      - "axis3:team"
-      - "axis3:others"
-      - "axis3:others"
+Each axis contains:
 
-  - id: A3_REF_SELF
-    parentId: A3_Q2
-    type: reflection
-    text: "Your focus stayed narrow today. Expanding perspective reduces pressure."
-    signal: "axis3:self"
+* Questions with fixed options
+* Signals attached to options
+* Reflections based on accumulated signals
 
-  - id: A3_REF_OTHER
-    parentId: A3_Q2
-    type: reflection
-    text: "You looked beyond yourself. That’s where meaning compounds."
-    signal: "axis3:others"
+---
 
-  # ---------------- SUMMARY ----------------
+## Node Types
 
-  - id: SUMMARY
-    parentId: A3_REF_OTHER
-    type: summary
-    text: "Today you showed {axis1.dominant} control, {axis2.dominant} contribution, and {axis3.dominant} perspective."
+* **start** — begins the session
+* **question** — user selects from fixed options
+* **decision** — routes based on previous answers
+* **reflection** — provides insight based on path
+* **bridge** — transitions between axes
+* **summary** — synthesizes user behavior
+* **end** — closes session
 
-  - id: END
-    parentId: SUMMARY
-    type: end
-    text: "Session complete. See you tomorrow."
+---
+
+## State & Signals
+
+Each answer contributes to internal state:
+
+* `axis1:internal` / `axis1:external`
+* `axis2:contribution` / `axis2:entitlement`
+* `axis3:self` / `axis3:others`
+
+The final summary is generated using:
+
+* Dominant signals
+* Stored answers (via interpolation)
+
+---
+
+## How to Use
+
+1. Load the YAML file
+2. Traverse nodes sequentially
+3. At each question:
+
+   * Display options
+   * Capture selection
+4. Update state using signals
+5. Follow deterministic branching
+6. Display summary at end
+
+---
+
+## Notes
+
+* This project focuses on **knowledge structuring**, not UI or AI
+* The quality of the system depends on the **clarity of questions and branching logic**
+* The tree is designed to simulate a reflective conversation without ambiguity
+
